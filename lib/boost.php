@@ -734,17 +734,14 @@ function boost_process_poller_output($local_data_id, $rrdtool_pipe = null) {
 	}
 
 	$query_string        = '';
-	$query_string_suffix = 'ORDER BY local_data_id ASC, timestamp ASC, rrd_name ASC';
 	$sql_params          = array();
 	$locks               = false;
 	$temp_table          = false;
 
 	if (cacti_count($archive_tables)) {
-		//$temp_table = 'poller_output_boost_temp_' . $local_data_id . '_' . mt_rand() . '_' . microtime(true);
 		$temp_table = 'poller_output_boost_temp';
 
-		//db_execute("CREATE TEMPORARY TABLE $temp_table LIKE poller_output_boost");
-		db_execute("CREATE TABLE $temp_table LIKE poller_output_boost");
+		db_execute("CREATE TABLE IF NOT EXISTS $temp_table LIKE poller_output_boost");
 
 		foreach($archive_tables as $index => $table) {
 			db_execute_prepared("INSERT INTO $temp_table
@@ -792,7 +789,6 @@ function boost_process_poller_output($local_data_id, $rrdtool_pipe = null) {
 	$boost_results = cacti_sizeof($results);
 
 	if ($temp_table !== false) {
-		//db_execute("DROP TEMPORARY TABLE $temp_table");
 		db_execute("TRUNCATE TABLE $temp_table");
 	}
 
